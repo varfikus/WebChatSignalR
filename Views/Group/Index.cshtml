@@ -1,0 +1,218 @@
+﻿@using Microsoft.AspNetCore.Routing
+@using System.Text.RegularExpressions
+@using WebChatSignalR.ViewModels
+@model WebChatSignalR.ViewModels.GroupChatViewModel
+
+@{
+    ViewBag.Title = "Groups";
+    Layout = "_Layout";
+    var routeId = Context.GetRouteData().Values["id"]?.ToString() ?? "";
+}
+
+<div class="row">
+    <div class="chat-sidebar col-md-3 overflow-auto">
+        <form class="mb-2">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Поиск групп..." aria-label="Поиск...">
+                <div class="input-group-append">
+                    <button class="btn btn-search-ico bg-white" type="submit">
+                        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-search" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z" />
+                            <path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </form>
+        <div class="user-list">
+            <ul class="list-group">
+                @foreach (var group in Model.Groups.Results)
+                {
+                    <li class="list-group-item list-group-item-action @(routeId.Equals(group.Id.ToString()) ? "active text-white" : "")" data-GroupId="@group.Id">
+                        <a asp-controller="Group" asp-action="Index" asp-route-id="@group.Id" class="position-absolute inset-0"></a>
+                        <div class="d-flex">
+                            <div class="profile-avatar mr-2">
+                                <img class="avatar-img" src="/images/@group" alt="">
+                            </div>
+                            <div class="overflow-hidden w-100">
+                                <div class="d-flex mb-1">
+                                    <h6 class="text-truncate mb-0 mr-auto">@group.Name</h6>
+                                    <p class="small text-nowrap last-updated" datetime="@group.LastUpdated"></p>
+                                </div>
+                                <div class="text-truncate last-msg p-1">@Html.Raw(group.Members.Count)</div>
+                            </div>
+                        </div>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(routeId))
+{
+    <div class="chat-area col-md-7 px-1">
+        <div class="border-bottom p-1">
+            <div class="d-flex">
+                <div class="profile-avatar mr-2">
+                    <img class="avatar-img" src="/images/" alt="avatar">
+                </div>
+                <h6 class="text-truncate mt-1 mr-auto">@Model.GroupConversation.Name</h6>
+            </div>
+        </div>
+
+        <ul id="chat-box" class="chat-box bg-white d-flex flex-column-reverse overflow-auto">
+            <ul id="messagesList" class="list-unstyled">
+                <li id="load-more" class="d-flex justify-content-center">
+                    <div class="spinner-border d-none" role="status">
+                        <span class="sr-only">Загрузка...</span>
+                    </div>
+                </li>
+
+                @{
+                    var allMessages = Model.GroupConversation.Messages.Results.Cast<object>()
+                        .Concat(Model.GroupConversation.VoiceMessages?.Results.Cast<object>() ?? Enumerable.Empty<object>())
+                        .OrderBy(m => m is MessageViewModel ? ((MessageViewModel)m).Timestamp : ((VoiceMessageViewModel)m).Timestamp)
+                        .ToList();
+                }
+
+                @foreach (var item in allMessages)
+                {
+                    bool isVoiceMessage = item is VoiceMessageViewModel;
+                    var timestamp = isVoiceMessage
+                        ? ((VoiceMessageViewModel)item).Timestamp
+                        : ((MessageViewModel)item).Timestamp;
+
+                    var senderId = isVoiceMessage
+                        ? ((VoiceMessageViewModel)item).SenderId
+                        : ((MessageViewModel)item).SenderId;
+
+                    var sender = Model.GroupConversation.Members.FirstOrDefault(m => m.User != null && m.User.Id == senderId)?.User;
+                    bool isSender = senderId == Model.CurrentUser.Id;
+
+                    var avatar = sender?.Avatar ?? "/images/default-avatar.png";
+                    var name = sender?.Name ?? "Unknown User";
+                    <li class="message-item @(isSender ? "sent" : "received")">
+                        <div class="media p-2">
+                            <div class="profile-avatar mr-2">
+                                <img class="avatar-img" src="@avatar" alt="avatar">
+                            </div>
+                            <div class="media-body overflow-hidden">
+                                <div class="d-flex mb-1">
+                                    <h6 class="text-truncate mb-0 mr-auto">@name</h6>
+                                    <p class="small text-muted text-nowrap ml-4">@timestamp.ToString("HH:mm")</p>
+                                </div>
+
+                                @if (isVoiceMessage)
+                                {
+                                    var voiceMessage = (VoiceMessageViewModel)item;
+                                    <div class="mt-2">
+                                        <audio controls>
+                                            <source src="@voiceMessage.FilePath" type="audio/webm">
+                                            Ваш браузер не поддерживает аудиоэлемент.
+                                        </audio>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        var message = (MessageViewModel)item;
+                                        var file = message.File;
+                                        var FileName = message.FileName;
+                                        var fileHtml = "";
+
+                                        if (file != null && file.Length > 0)
+                                        {
+                                            var base64File = Convert.ToBase64String(file);
+                                            var mimeType = "application/octet-stream";
+
+                                            if (!string.IsNullOrEmpty(FileName))
+                                            {
+                                                if (Regex.IsMatch(FileName, @"\.(jpg|jpeg|png|gif|bmp)$", RegexOptions.IgnoreCase))
+                                                {
+                                                    mimeType = "image/png";
+                                                }
+                                                else if (Regex.IsMatch(FileName, @"\.pdf$", RegexOptions.IgnoreCase))
+                                                {
+                                                    mimeType = "application/pdf";
+                                                }
+                                                else if (Regex.IsMatch(FileName, @"\.(doc|docx)$", RegexOptions.IgnoreCase))
+                                                {
+                                                    mimeType = "application/msword";
+                                                }
+                                            }
+
+                                            if (mimeType.StartsWith("image"))
+                                            {
+                                                fileHtml = $@"
+                                            <div class='mt-2'>
+                                                <img src='data:{mimeType};base64,{base64File}' alt='Image' class='img-fluid' style='max-width: 200px; border-radius: 8px;'>
+                                            </div>";
+                                            }
+                                            else
+                                            {
+                                                fileHtml = $"\r\n<div class='mt-2'>\r\n<a href='data:{mimeType};base64,{base64File}' download='{FileName ?? "file"}'>\r\nСкачать вложение ({FileName ?? "файл"})\r\n</a>\r\n</div>";
+                                            }
+                                    }
+
+                                    var parsedMessage = !string.IsNullOrEmpty(message.Content)
+                                        ? Html.Raw(message.Content)
+                                        : Html.Raw("<i>(Файл)</i>");
+
+                                    <div class="text-wrap text-break p-1 message">@parsedMessage</div>
+                                    @Html.Raw(fileHtml)
+                                }
+                            </div>
+                        </div>
+                    </li>
+                }
+            </ul>
+        </ul>
+
+        <form class="form-inline">
+            <div class="input-group w-100">
+                <textarea id="messageInput" type="text" rows="1" class="form-control" placeholder="Написать сообщение..."></textarea>
+                <input type="file" id="fileInput">
+                <input type="hidden" id="GroupId" value="@Model.GroupConversation.Id" />
+                <input type="hidden" id="UserId" value="@Model.CurrentUser.Id" />
+                <div class="input-group-append">
+                    <div class="dropdown">
+                        <button class="btn btn-search-ico bg-white border-right-0 rounded-0" type="button" id="chatIcon" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <svg width="2em" height="2em" viewBox="0 0 16 16" class="bi bi-emoji-smile" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                <path fill-rule="evenodd" d="M4.285 9.567a.5.5 0 0 1 .683.183A3.498 3.498 0 0 0 8 11.5a3.498 3.498 0 0 0 3.032-1.75.5.5 0 1 1 .866.5A4.498 4.498 0 0 1 8 12.5a4.498 4.498 0 0 1-3.898-2.25.5.5 0 0 1 .183-.683z"/>
+                                <path d="M7 6.5C7 7.328 6.552 8 6 8s-1-.672-1-1.5S5.448 5 6 5s1 .672 1 1.5zm4 0c0 .828-.448 1.5-1 1.5s-1-.672-1-1.5S9.448 5 10 5s1 .672 1 1.5z"/>
+                            </svg>
+                        </button>
+                        <div class="dropdown-menu emoji-dropdown text-center" aria-labelledby="chatIcon">
+                            <!-- Emoji links remain unchanged -->
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-search-ico bg-white" id="sendButton" value="Send Message">
+                        <svg width="2em" height="2em" viewBox="0 0 16 16" class="bi bi-cursor" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M14.082 2.182a.5.5 0 0 1 .103.557L8.528 15.467a.5.5 0 0 1-.917-.007L5.57 10.694.803 8.652a.5.5 0 0 1-.006-.916l12.728-5.657a.5.5 0 0 1 .556.103zM2.25 8.184l3.897 1.67a.5.5 0 0 1 .262.263l1.67 3.897L12.743 3.52 2.25 8.184z"/>
+                        </svg>
+                    </button>
+
+                    <button type="button" class="btn btn-search-ico bg-white" id="recordButton">
+                        🎤
+                    </button>
+                    <audio id="audioPreview" controls class="d-none"></audio>
+                </div>
+            </div>
+        </form>
+    </div>
+}
+else
+{
+    <div class="d-flex justify-content-center align-items-center flex-grow-1 text-center">
+        <div>
+            <h1 class="display-4">💬</h1>
+            <h1>Выберите, кому хотите написать</h1>
+        </div>
+    </div>
+}
+
+<div class="col-md-2 border d-none d-sm-block"></div>
+</div>
+<script src="~/lib/signalr/dist/browser/signalr.js"></script>
+<script src="~/js/group.js"></script>

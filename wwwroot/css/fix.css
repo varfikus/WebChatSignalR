@@ -1,0 +1,18 @@
+﻿@media (max-width: 576px) {
+    #fileInput {
+        display: block; /* Put file input on a new line */
+        width: 100%; /* Make it full width */
+        margin-top: 5px;
+    }
+
+    #recordButton {
+        display: block; /* Put record button on a new line */
+        width: 100%; /* Full width for better accessibility */
+        margin-top: 5px;
+    }
+
+    .input-group-append {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
