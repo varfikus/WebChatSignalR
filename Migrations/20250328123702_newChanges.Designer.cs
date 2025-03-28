@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using WebChatSignalR.Data;
@@ -11,9 +12,11 @@ using WebChatSignalR.Data;
 namespace WebChatSignalR.Migrations
 {
     [DbContext(typeof(ChatDbContext))]
-    partial class ChatDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250328123702_newChanges")]
+    partial class newChanges
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -234,31 +237,25 @@ namespace WebChatSignalR.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("Id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("BlockedBy")
-                        .HasColumnType("integer")
-                        .HasColumnName("BlockedBy");
+                        .HasColumnType("integer");
 
                     b.Property<int>("CreatorId")
-                        .HasColumnType("integer")
-                        .HasColumnName("CreatorId");
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsBlocked")
-                        .HasColumnType("boolean")
-                        .HasColumnName("IsBlocked");
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsReported")
-                        .HasColumnType("boolean")
-                        .HasColumnName("IsReported");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("Name");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -271,18 +268,15 @@ namespace WebChatSignalR.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("Id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("GroupId")
-                        .HasColumnType("integer")
-                        .HasColumnName("GroupId");
+                        .HasColumnType("integer");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("UserId");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -297,49 +291,41 @@ namespace WebChatSignalR.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("Id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("AppUserId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Content")
-                        .HasColumnType("text")
-                        .HasColumnName("Content");
+                        .HasColumnType("text");
 
                     b.Property<byte[]>("File")
-                        .HasColumnType("bytea")
-                        .HasColumnName("File");
+                        .HasColumnType("bytea");
 
                     b.Property<string>("FileName")
-                        .HasColumnType("text")
-                        .HasColumnName("FileName");
+                        .HasColumnType("text");
 
                     b.Property<int?>("GroupId")
-                        .HasColumnType("integer")
-                        .HasColumnName("GroupId");
+                        .HasColumnType("integer");
 
                     b.Property<int?>("RoomId")
-                        .HasColumnType("integer")
-                        .HasColumnName("RoomId");
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("RoomId1")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("Timestamp")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("Timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("UserId");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AppUserId");
 
                     b.HasIndex("GroupId");
 
                     b.HasIndex("RoomId");
+
+                    b.HasIndex("RoomId1");
 
                     b.HasIndex("UserId");
 
@@ -350,8 +336,7 @@ namespace WebChatSignalR.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("Id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
@@ -362,40 +347,31 @@ namespace WebChatSignalR.Migrations
                         .HasColumnType("integer");
 
                     b.Property<int>("BlockedBy")
-                        .HasColumnType("integer")
-                        .HasColumnName("BlockedBy");
+                        .HasColumnType("integer");
 
                     b.Property<int>("CreatorId")
-                        .HasColumnType("integer")
-                        .HasColumnName("CreatorId");
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsBlocked")
-                        .HasColumnType("boolean")
-                        .HasColumnName("IsBlocked");
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsReported")
-                        .HasColumnType("boolean")
-                        .HasColumnName("IsReported");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text")
-                        .HasColumnName("Name");
+                        .HasColumnType("text");
 
                     b.Property<int>("UnreadCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("UnreadCount");
+                        .HasColumnType("integer");
 
                     b.Property<int>("UpdatedBy")
-                        .HasColumnType("integer")
-                        .HasColumnName("UpdatedBy");
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("UpdatedDate");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("UserId");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -414,41 +390,39 @@ namespace WebChatSignalR.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("Id");
+                        .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("FileName")
-                        .HasColumnType("text")
-                        .HasColumnName("FileName");
+                        .HasColumnType("text");
 
                     b.Property<string>("FilePath")
                         .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("FilePath");
+                        .HasColumnType("text");
 
                     b.Property<int?>("GroupId")
-                        .HasColumnType("integer")
-                        .HasColumnName("GroupId");
+                        .HasColumnType("integer");
 
                     b.Property<int?>("RoomId")
-                        .HasColumnType("integer")
-                        .HasColumnName("RoomId");
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("RoomId1")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("Timestamp")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("Timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("UserId");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("GroupId");
 
                     b.HasIndex("RoomId");
+
+                    b.HasIndex("RoomId1");
 
                     b.HasIndex("UserId");
 
@@ -526,7 +500,7 @@ namespace WebChatSignalR.Migrations
                     b.HasOne("WebChatSignalR.Models.AppUser", "Creator")
                         .WithMany()
                         .HasForeignKey("CreatorId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Creator");
@@ -543,7 +517,7 @@ namespace WebChatSignalR.Migrations
                     b.HasOne("WebChatSignalR.Models.AppUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Group");
@@ -553,24 +527,23 @@ namespace WebChatSignalR.Migrations
 
             modelBuilder.Entity("WebChatSignalR.Models.Message", b =>
                 {
-                    b.HasOne("WebChatSignalR.Models.AppUser", null)
-                        .WithMany("Messages")
-                        .HasForeignKey("AppUserId");
-
                     b.HasOne("WebChatSignalR.Models.Group", "Group")
                         .WithMany("Messages")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("GroupId");
 
-                    b.HasOne("WebChatSignalR.Models.Room", "Room")
+                    b.HasOne("WebChatSignalR.Models.Room", null)
                         .WithMany("Messages")
                         .HasForeignKey("RoomId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("WebChatSignalR.Models.AppUser", "User")
+                    b.HasOne("WebChatSignalR.Models.Room", "Room")
                         .WithMany()
+                        .HasForeignKey("RoomId1");
+
+                    b.HasOne("WebChatSignalR.Models.AppUser", "User")
+                        .WithMany("Messages")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Group");
@@ -611,18 +584,21 @@ namespace WebChatSignalR.Migrations
                 {
                     b.HasOne("WebChatSignalR.Models.Group", "Group")
                         .WithMany("VoiceMessages")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("GroupId");
 
-                    b.HasOne("WebChatSignalR.Models.Room", "Room")
+                    b.HasOne("WebChatSignalR.Models.Room", null)
                         .WithMany("VoiceMessages")
                         .HasForeignKey("RoomId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.HasOne("WebChatSignalR.Models.Room", "Room")
+                        .WithMany()
+                        .HasForeignKey("RoomId1");
+
                     b.HasOne("WebChatSignalR.Models.AppUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Group");

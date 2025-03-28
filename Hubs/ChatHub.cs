@@ -22,25 +22,38 @@ namespace WebChatSignalR.Hubs
 
         public async Task SendMessage(string conversationId, string UserId, string message, string base64File, string FileName)
         {
-            int RoomId = Convert.ToInt32(conversationId);
-            int loginUserId = Convert.ToInt32(GetLoginUser());
-            var room = await _db.Rooms.FirstOrDefaultAsync(x => x.Id == RoomId);
+            if (string.IsNullOrEmpty(conversationId) || string.IsNullOrEmpty(UserId))
+            {
+                await Clients.Caller.SendAsync("onError", "Invalid conversation or user ID.");
+                return;
+            }
+
+            int RoomId;
+            int loginUserId;
+
+            if (!int.TryParse(conversationId, out RoomId) || !int.TryParse(GetLoginUser(), out loginUserId))
+            {
+                await Clients.Caller.SendAsync("onError", "Invalid conversation or user ID format.");
+                return;
+            }
+
+            var room = await _db.Rooms.Include(r => r.Messages).FirstOrDefaultAsync(x => x.Id == RoomId);
 
             if (room == null)
             {
+                await Clients.Caller.SendAsync("onError", "Room not found.");
                 return;
             }
 
             try
             {
                 room.UnreadCount += 1;
-                room.UpdatedDate = DateTime.Now;
+                room.UpdatedDate = DateTime.UtcNow;
                 room.UpdatedBy = loginUserId;
 
-                var sanitizedMessage = string.IsNullOrWhiteSpace(message) ? null :
+                string sanitizedMessage = string.IsNullOrWhiteSpace(message) ? null :
                     Regex.Replace(message.Trim(), @"(?i)<(?!img|a|/a|/img).*?>", string.Empty);
 
-                
                 byte[] fileBytes = !string.IsNullOrEmpty(base64File) ? Convert.FromBase64String(base64File) : null;
 
                 var newMessage = new Message
@@ -54,18 +67,23 @@ namespace WebChatSignalR.Hubs
                     GroupId = null
                 };
 
+                if (room.Messages == null)
+                {
+                    room.Messages = new List<Message>();
+                }
+
                 room.Messages.Add(newMessage);
                 await _db.SaveChangesAsync();
 
                 await Clients.Group(conversationId).SendAsync("ReceiveMessage",
-     newMessage.UserId,
-     newMessage.Content ?? "",  
-     newMessage.File != null && newMessage.File.Length > 0 ? Convert.ToBase64String(newMessage.File) : "", 
-     !string.IsNullOrWhiteSpace(newMessage.FileName) ? newMessage.FileName : "",
-     newMessage.Timestamp);
+                    newMessage.UserId,
+                    newMessage.Content ?? "",
+                    newMessage.File != null && newMessage.File.Length > 0 ? Convert.ToBase64String(newMessage.File) : "",
+                    !string.IsNullOrWhiteSpace(newMessage.FileName) ? newMessage.FileName : "",
+                    newMessage.Timestamp);
 
                 var otherUser = loginUserId == room.UserId ? room.CreatorId : room.UserId;
-                if (OnlineUser.TryGetValue(otherUser.ToString(), out string connectionId))
+                if (otherUser != null && OnlineUser.TryGetValue(otherUser.ToString(), out string connectionId))
                 {
                     await SendNotification(connectionId, newMessage.RoomId.ToString(), newMessage.Content);
                 }

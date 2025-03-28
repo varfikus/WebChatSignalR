@@ -35,6 +35,9 @@ namespace WebChatSignalR.ViewModels
         public ConversationViewModel()
         {
             Messages = new PagedResult<MessageViewModel>();
+            VoiceMessages = new PagedResult<VoiceMessageViewModel>();
+            Sender = new PersonViewModel(); 
+            Recipient = new PersonViewModel();
         }
 
         public string Id { get; set; }

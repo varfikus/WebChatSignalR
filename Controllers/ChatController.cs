@@ -112,7 +112,7 @@ namespace WebChatSignalR.Controllers
 
                 if (currentRoom == null)
                 {
-                    var newRoom = new Room { CreatorId = loginUserId, UserId = (int)id, UpdatedDate = DateTime.Now };
+                    var newRoom = new Room { CreatorId = loginUserId, UserId = (int)id, UpdatedDate = DateTime.UtcNow };
                     await _dbContext.Rooms.AddAsync(newRoom);
                     await _dbContext.SaveChangesAsync();
 
@@ -144,14 +144,16 @@ namespace WebChatSignalR.Controllers
                     conversation.Recipient = currentRoom.Recipient;
                     connectedRooms.Results.Insert(0, currentRoom);
                 }
-                else
+                else if (currentRoom != null)
                 {
                     conversation.Id = currentRoom.Id.ToString();
                     conversation.IsBlocked = currentRoom.IsBlocked;
                     conversation.IsReported = currentRoom.IsReported;
                     conversation.BlockedBy = currentRoom.BlockedBy;
-                    conversation.Recipient = currentRoom.Recipient;
-                    conversation.Sender = currentRoom.Sender;
+                    //conversation.Recipient = currentRoom.Recipient;
+                    //conversation.Sender = currentRoom.Sender;
+                    conversation.Sender = currentRoom.Sender ?? new PersonViewModel();
+                    conversation.Recipient = currentRoom.Recipient ?? new PersonViewModel();
 
                     var textMessages = await _dbContext.Messages
                         .Where(x => x.RoomId == currentRoom.Id)
