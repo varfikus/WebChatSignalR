@@ -215,12 +215,15 @@ var Chat = {
     },
 
     uploadAudio: async function (blob) {
+        console.log("Размер файла перед отправкой:", blob.size); 
+
         const formData = new FormData();
         formData.append("audio", blob, "voice-message.webm");
         formData.append("RoomId", Chat.el.RoomId.value);
         formData.append("UserId", Chat.el.UserId.value);
 
         try {
+            debugger;
             const response = await fetch("/Chat/UploadVoiceMessage", {
                 method: "POST",
                 body: formData
@@ -229,10 +232,10 @@ var Chat = {
             if (response.ok) {
                 console.log("Аудиофайл отправлен успешно");
                 Chat.el.audioPreview.src = "";
-                Chat.el.audioPreview.classList.add("d-none"); 
+                Chat.el.audioPreview.classList.add("d-none");
                 Chat.el.recordButton.textContent = "🎤";
             } else {
-                console.error("Ошибка при отправке аудио");
+                console.error("Ошибка при отправке аудио", await response.text()); 
             }
         } catch (error) {
             console.error("Ошибка сети", error);

@@ -23,10 +23,10 @@ namespace WebChatSignalR.Controllers
     public class GroupController : Controller
     {
         private readonly ChatDbContext _dbContext;
-        private readonly IHubContext<ChatHub> _hubContext;
+        private readonly IHubContext<GroupHub> _hubContext;
         private readonly IWebHostEnvironment _env;
 
-        public GroupController(ChatDbContext dbContext, IHubContext<ChatHub> hubContext, IWebHostEnvironment env)
+        public GroupController(ChatDbContext dbContext, IHubContext<GroupHub> hubContext, IWebHostEnvironment env)
         {
             _dbContext = dbContext;
             _hubContext = hubContext;
@@ -45,7 +45,6 @@ namespace WebChatSignalR.Controllers
                 return RedirectToActionPermanent(nameof(Index));
             }
 
-            // Fetch connected groups
             var connectedGroups = await _dbContext.Groups
                 .Include(x => x.Creator)
                 .Include(x => x.Members).ThenInclude(gm => gm.User)
@@ -65,7 +64,6 @@ namespace WebChatSignalR.Controllers
                 })
                 .GetPagedAsync(page, pageSize);
 
-            // Prepare conversation data
             var groupConversation = new GroupConversationViewModel();
 
             if (id.HasValue)
@@ -118,7 +116,6 @@ namespace WebChatSignalR.Controllers
                         Name = currentGroup.Name,
                         CreatorId = currentGroup.CreatorId,
 
-                        // Ensure Members contain full user info
                         Members = currentGroup.AllUsers.Select(u => new GroupMemberViewModel
                         {
                             UserId = (int)u.Id,
@@ -130,7 +127,6 @@ namespace WebChatSignalR.Controllers
                             }
                         }).ToList(),
 
-                        // Fetch Messages
                         Messages = await _dbContext.Messages
         .Where(x => x.GroupId == currentGroup.Id)
         .OrderByDescending(x => x.Timestamp)
@@ -199,6 +195,7 @@ namespace WebChatSignalR.Controllers
         }
 
         [HttpPost]
+        [Route("Group/UploadVoiceMessage")]
         public async Task<IActionResult> UploadVoiceMessage([FromForm] IFormFile audio, [FromForm] int GroupId, [FromForm] int UserId)
         {
             if (audio == null || audio.Length == 0)
@@ -230,20 +227,14 @@ namespace WebChatSignalR.Controllers
             await _dbContext.SaveChangesAsync();
 
             await _hubContext.Clients.Group(GroupId.ToString())
-                .SendAsync("ReceiveVoiceMessage", UserId, voiceMessage.FilePath, voiceMessage.Timestamp);
+                .SendAsync("ReceiveGroupVoiceMessage", UserId, voiceMessage.FilePath, voiceMessage.Timestamp, voiceMessage.GroupId);
 
             return Ok(new { voiceMessage.FilePath });
         }
 
-        [HttpGet("GetGroupUsers/{GroupId}")]
+        [HttpGet("Group/GetGroupUsers/{GroupId}")]
         public async Task<IActionResult> GetGroupUsers(int GroupId)
         {
-            var groupExists = await _dbContext.Groups.AnyAsync(g => g.Id == GroupId);
-            if (!groupExists)
-            {
-                return NotFound($"Group with ID {GroupId} not found.");
-            }
-
             var users = await _dbContext.GroupMembers
                 .Where(gm => gm.GroupId == GroupId)
                 .Select(gm => new
@@ -254,9 +245,9 @@ namespace WebChatSignalR.Controllers
                 })
                 .ToListAsync();
 
-            if (!users.Any())
+            if (users.Count == 0)
             {
-                return NotFound($"No users found for group {GroupId}");
+                return NotFound(new { message = $"No users found for group {GroupId}" });
             }
 
             return Ok(users);

@@ -14,17 +14,15 @@ namespace WebChatSignalR.Areas.Identity.Pages.Account
     public class RegisterConfirmationModel : PageModel
     {
         private readonly UserManager<AppUser> _userManager;
-        // private readonly IEmailSender _sender;
 
-        public RegisterConfirmationModel(UserManager<AppUser> userManager /*, IEmailSender sender*/)
+        public RegisterConfirmationModel(UserManager<AppUser> userManager)
         {
             _userManager = userManager;
-            // _sender = sender;
         }
 
         public string Email { get; set; }
 
-        public bool DisplayConfirmAccountLink { get; set; }
+        public bool DisplayConfirmAccountLink { get; set; } = false; // Set to false by default
 
         public string EmailConfirmationUrl { get; set; }
 
@@ -43,24 +41,19 @@ namespace WebChatSignalR.Areas.Identity.Pages.Account
 
             Email = email;
 
-            // Оставляем возможность показать ссылку подтверждения (для тестирования)
-            DisplayConfirmAccountLink = true;
-
+            // Optionally display a confirmation link for testing (e.g., in development)
+            // Set this via configuration or environment if needed
             if (DisplayConfirmAccountLink)
             {
-                var UserId = await _userManager.GetUserIdAsync(user);
+                var userId = await _userManager.GetUserIdAsync(user);
                 var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
                 EmailConfirmationUrl = Url.Page(
                     "/Account/ConfirmEmail",
                     pageHandler: null,
-                    values: new { area = "Identity", UserId = UserId, code = code, returnUrl = returnUrl },
+                    values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
                     protocol: Request.Scheme);
-
-                // Логика отправки email отключена
-                // await _sender.SendEmailAsync(Email, "Confirm your email",
-                // $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(EmailConfirmationUrl)}'>clicking here</a>.");
             }
 
             return Page();

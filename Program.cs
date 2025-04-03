@@ -3,10 +3,18 @@ using Microsoft.EntityFrameworkCore;
 using WebChatSignalR.Hubs;
 using WebChatSignalR.Models;
 using WebChatSignalR.Data;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using WebChatSignalR.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var configuration = builder.Configuration;
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 104857600; 
+});
 
 builder.Services.AddDbContext<ChatDbContext>(options =>
     options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
@@ -26,6 +34,8 @@ builder.Services.AddIdentity<AppUser, IdentityRole<int>>(options =>
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
+builder.Services.AddScoped<IEmailSender, EmailSender>();
+
 builder.Services.AddSignalR(options =>
 {
     options.EnableDetailedErrors = true;
@@ -35,6 +45,11 @@ builder.Services.AddSignalR(options =>
 builder.Services.AddSignalR().AddJsonProtocol(options =>
 {
     options.PayloadSerializerOptions.PropertyNamingPolicy = null;
+});
+
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = true;
 });
 
 var app = builder.Build();

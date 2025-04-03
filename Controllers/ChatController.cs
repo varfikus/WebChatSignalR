@@ -16,6 +16,8 @@ using WebChatSignalR.Hubs;
 using WebChatSignalR.Models;
 using WebChatSignalR.Utils.Pagination;
 using WebChatSignalR.ViewModels;
+using System.Security.AccessControl;
+using System.IO;
 
 namespace WebChatSignalR.Controllers
 {
@@ -150,10 +152,10 @@ namespace WebChatSignalR.Controllers
                     conversation.IsBlocked = currentRoom.IsBlocked;
                     conversation.IsReported = currentRoom.IsReported;
                     conversation.BlockedBy = currentRoom.BlockedBy;
-                    //conversation.Recipient = currentRoom.Recipient;
-                    //conversation.Sender = currentRoom.Sender;
-                    conversation.Sender = currentRoom.Sender ?? new PersonViewModel();
-                    conversation.Recipient = currentRoom.Recipient ?? new PersonViewModel();
+                    conversation.Recipient = currentRoom.Recipient;
+                    conversation.Sender = currentRoom.Sender;
+                    //conversation.Sender = currentRoom.Sender ?? new PersonViewModel();
+                    //conversation.Recipient = currentRoom.Recipient ?? new PersonViewModel();
 
                     var textMessages = await _dbContext.Messages
                         .Where(x => x.RoomId == currentRoom.Id)
@@ -237,6 +239,7 @@ namespace WebChatSignalR.Controllers
         }
 
         [HttpPost]
+        [Route("Chat/UploadVoiceMessage")]
         public async Task<IActionResult> UploadVoiceMessage([FromForm] IFormFile audio, [FromForm] int RoomId, [FromForm] int UserId)
         {
             if (audio == null || audio.Length == 0)
@@ -246,7 +249,6 @@ namespace WebChatSignalR.Controllers
 
             var FileName = $"{Guid.NewGuid()}.webm";
             var directoryPath = Path.Combine("wwwroot", "uploads", "voice");
-            Directory.CreateDirectory(directoryPath);
             var FilePath = Path.Combine(directoryPath, FileName);
 
             using (var fileStream = new FileStream(FilePath, FileMode.Create))

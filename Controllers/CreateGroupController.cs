@@ -59,7 +59,7 @@ namespace WebChatSignalR.Controllers
             if (currentUser == null)
                 return RedirectToAction("Login", "Account");
 
-            if (ModelState.IsValid)
+            if (model.SelectedUserIds.Count > 1)
             {
                 var group = new Group
                 {
@@ -84,14 +84,14 @@ namespace WebChatSignalR.Controllers
 
                 await _dbContext.SaveChangesAsync();
 
-                return RedirectToAction("Index");
+                return RedirectToAction("Index", "Group");
             }
 
             model.AllUsers = await _dbContext.Users
                 .Select(u => new PersonViewModel { Id = u.Id, Name = u.UserName })
                 .ToListAsync();
 
-            return RedirectToAction("Index", "Group");
+            return RedirectToAction("Index");
         }
 
         private int CurrentLoginUser()

@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using WebChatSignalR.Models;
+using WebChatSignalR.Services;
 
 namespace WebChatSignalR.Areas.Identity.Pages.Account
 {
@@ -23,18 +24,18 @@ namespace WebChatSignalR.Areas.Identity.Pages.Account
         private readonly SignInManager<AppUser> _signInManager;
         private readonly UserManager<AppUser> _userManager;
         private readonly ILogger<RegisterModel> _logger;
-        //private readonly IEmailSender _emailSender;
+        private readonly Services.IEmailSender _emailSender;
 
         public RegisterModel(
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
-            ILogger<RegisterModel> logger
-            /*IEmailSender emailSender*/)
+            ILogger<RegisterModel> logger,
+            Services.IEmailSender emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
-            //_emailSender = emailSender;
+            _emailSender = emailSender;
         }
 
         [BindProperty]
@@ -75,58 +76,54 @@ namespace WebChatSignalR.Areas.Identity.Pages.Account
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl = returnUrl ?? Url.Content("~/");
-
-            // Получаем список внешних аутентификаций
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
             if (ModelState.IsValid)
             {
-                // Создаем нового пользователя
                 var user = new AppUser { UserName = Input.Email, Email = Input.Email, Name = Input.Name };
-
-                // Регистрируем пользователя
                 var result = await _userManager.CreateAsync(user, Input.Password);
 
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
 
-                    // Генерируем токен подтверждения email
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
-                    // Строим ссылку для подтверждения email
-                    var callbackUrl = Url.Page(
+                    //    var callbackUrl = Url.Page(
+                    //        "/Account/ConfirmEmail",
+                    //        pageHandler: null,
+                    //        values: new { area = "Identity", userId = user.Id, code = code, returnUrl = returnUrl },
+                    //        protocol: Request.Scheme);
+
+                    //    await _emailSender.SendEmailAsync(
+                    //        Input.Email,
+                    //        "Confirm your email",
+                    //        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+                    //    return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
+                    //}
+                    var tunnelBaseUrl = "https://grf6mf9h-7033.euw.devtunnels.ms";
+                    var callbackUrl = $"{tunnelBaseUrl}{Url.Page(
                         "/Account/ConfirmEmail",
                         pageHandler: null,
-                        values: new { area = "Identity", UserId = user.Id, code = code, returnUrl = returnUrl },
-                        protocol: Request.Scheme);
+                        values: new { area = "Identity", userId = user.Id, code = code, returnUrl = returnUrl },
+                        protocol: null)}";
 
-                    // Отправляем email для подтверждения (раскомментируйте, если хотите использовать этот функционал)
-                    //await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                    //    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                    await _emailSender.SendEmailAsync(
+                        Input.Email,
+                        "Confirm your email",
+                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
-                    // Если необходимо подтверждение email перед входом
-                    if (_userManager.Options.SignIn.RequireConfirmedAccount)
-                    {
-                        return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
-                    }
-                    else
-                    {
-                        // Входим в систему сразу после регистрации, если не требуется подтверждение email
-                        await _signInManager.SignInAsync(user, isPersistent: false);
-                        return LocalRedirect(returnUrl);
-                    }
+                    return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
                 }
 
-                // Обрабатываем ошибки, если регистрация не удалась
                 foreach (var error in result.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
             }
 
-            // Если модель невалидна, возвращаем страницу с ошибками
             return Page();
         }
     }

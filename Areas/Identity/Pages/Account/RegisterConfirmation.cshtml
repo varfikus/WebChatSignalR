@@ -1,21 +1,21 @@
 ﻿@page
-@model RegisterConfirmationModel
+@model WebChatSignalR.Areas.Identity.Pages.Account.RegisterConfirmationModel
 @{
-    ViewData["Title"] = "Register confirmation";
+    ViewData["Title"] = "Register Confirmation";
 }
 
 <h1>@ViewData["Title"]</h1>
-@{
-    if (@Model.DisplayConfirmAccountLink)
-    {
-<p>
-    <a id="confirm-link" href="@Model.EmailConfirmationUrl">Click here to confirm your account</a>
-</p>
-    }
-    else
-    {
-<p>
-        Please check your email to confirm your account.
-</p>
-    }
+
+<div class="alert alert-info">
+    <p>
+        We've sent a confirmation email to <strong>@Model.Email</strong>. Please check your inbox (and spam/junk folder) and click the link to confirm your account.
+    </p>
+</div>
+
+@if (Model.DisplayConfirmAccountLink && !string.IsNullOrEmpty(Model.EmailConfirmationUrl))
+{
+    <p>
+        <strong>For testing purposes:</strong>
+        <a id="confirm-link" href="@Model.EmailConfirmationUrl">Click here to confirm your account</a>
+    </p>
 }

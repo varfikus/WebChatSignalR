@@ -31,15 +31,13 @@ var Group = {
         let con = Group.el.connection;
 
         con.on("ReceiveGroupMessage", (UserId, message, file, FileName, timestamp, GroupIdNew) => {
-            console.log("Received message data:", { UserId, message, file, FileName, timestamp, GroupIdNew });
             Group.renderGroupMessage(UserId, message, file, FileName, timestamp, GroupIdNew, function (li) {
                 Group.el.messagesList.appendChild(li);
             });
         });
 
-        con.on("ReceiveGroupVoiceMessage", (UserId, FilePath, timestamp) => {
-            console.log("Received voice message:", { UserId, FilePath, timestamp });
-            Group.receiveGroupVoiceMessage(UserId, FilePath, timestamp);
+        con.on("ReceiveGroupVoiceMessage", (UserId, FilePath, timestamp, GroupId) => {
+            Group.receiveGroupVoiceMessage(UserId, FilePath, timestamp, GroupId);
         });
 
         con.on('onError', function (message) {
@@ -144,32 +142,45 @@ var Group = {
     //},
 
 
-    receiveGroupVoiceMessage: function (UserId, FilePath, timestamp) {
+    receiveGroupVoiceMessage: async function (UserId, FilePath, timestamp, GroupId) {
         let time = timeago.format(new Date(timestamp));
-        let name = UserId === +Group.el.senderId.value ? Group.el.senderName.value : Group.el.recipientName.value;
-        let avatar = UserId === +Group.el.senderId.value ? Group.el.senderAvatar.value : Group.el.recipientAvatar.value;
+        
+        let users = [];
+        try {
+            let response = await fetch(`/Group/GetGroupUsers/${GroupId}`);
+            if (!response.ok) throw new Error(`Failed to fetch users, status: ${response.status}`);
+
+            users = await response.json();
+            if (!Array.isArray(users)) throw new Error("Invalid response format");
+            
+        } catch (error) {
+            console.error("Error fetching group users:", error);
+            return;
+        }
+        
+        let author = users.find(u => u.id == UserId) || { name: "Unknown User", avatar: "/images/default-avatar.png" };
 
         let voiceMessageHtml = `
-    <li>
-        <div class="media p-2">
-            <div class="profile-avatar mr-2">
-                <img class="avatar-img" src="/images/${avatar}" alt="avatar">
+<li>
+    <div class="media p-2">
+        <div class="profile-avatar mr-2">
+            <img class="avatar-img" src="${author.avatar}" alt="avatar">
+        </div>
+        <div class="media-body overflow-hidden">
+            <div class="d-flex mb-1">
+                <h6 class="text-truncate mb-0 mr-auto">${author.name}</h6>
+                <p class="small text-muted text-nowrap ml-4">${time}</p>
             </div>
-            <div class="media-body overflow-hidden">
-                <div class="d-flex mb-1">
-                    <h6 class="text-truncate mb-0 mr-auto">${name}</h6>
-                    <p class="small text-muted text-nowrap ml-4">${time}</p>
-                </div>
-                <div class="mt-2">
-                    <audio controls>
-                        <source src="${FilePath}" type="audio/webm">
-                        Ваш браузер не поддерживает аудио.
-                    </audio>
-                </div>
+            <div class="mt-2">
+                <audio controls>
+                    <source src="${FilePath}" type="audio/webm">
+                    Ваш браузер не поддерживает аудио.
+                </audio>
             </div>
         </div>
-    </li>
-    `;
+    </div>
+</li>
+`;
 
         let li = document.createElement("li");
         li.innerHTML = voiceMessageHtml;
@@ -181,7 +192,6 @@ var Group = {
         const message = Group.el.messageInput.value.trim();
         const GroupId = Group.el.GroupId; 
         const fileInput = Group.el.fileInput.files[0];
-        console.log("📤 Sending message:", GroupId, UserId, message);
         if (!message && !fileInput) return;
 
         if (fileInput) {
@@ -255,7 +265,7 @@ var Group = {
     uploadAudio: async function (blob) {
         const formData = new FormData();
         formData.append("audio", blob, "voice-message.webm");
-        formData.append("GroupId", Group.el.GroupId.value);
+        formData.append("GroupId", Group.el.GroupId);
         formData.append("UserId", Group.el.UserId.value);
 
         try {
@@ -265,7 +275,6 @@ var Group = {
             });
 
             if (response.ok) {
-                console.log("Аудиофайл отправлен успешно");
                 Group.el.audioPreview.src = "";
                 Group.el.audioPreview.classList.add("d-none");
                 Group.el.recordButton.textContent = "🎤";
@@ -304,37 +313,29 @@ var Group = {
    
     renderGroupMessage: async function (UserId, message, file, FileName, timestamp, GroupIdNew, callback) {
         if (!GroupIdNew) {
-            console.error("❌ GroupIdNew is undefined! Cannot fetch users.");
             return;
         }
-
-        console.log("🔹 Rendering message:", UserId, message, file, FileName, timestamp, GroupIdNew);
 
         let time = timeago.format(new Date(timestamp));
 
         let users = [];
         try {
-            console.log("Fetching users for group:", GroupIdNew);
             let response = await fetch(`/Group/GetGroupUsers/${GroupIdNew}`);
             if (!response.ok) throw new Error(`Failed to fetch users, status: ${response.status}`);
 
             users = await response.json();
             if (!Array.isArray(users)) throw new Error("Invalid response format");
-
-            console.log("✅ Users loaded:", users);
+            
         } catch (error) {
-            console.error("❌ Error fetching group users:", error);
+            console.error("Error fetching group users:", error);
             return;
         }
+        
+        let author = users.find(u => u.id == UserId) || { Name: "Unknown User", Avatar: "/images/default-avatar.png" };
 
-        // Find the sender in the fetched users list
-        let author = users.find(u => u.Id === UserId) || { name: "Unknown User", avatar: "/images/default-avatar.png" };
-        console.log("Rendering user:", author);
+        let messageClass = "received";
 
-        let isSender = UserId === parseInt(Chat.el.senderId.value, 10);
-        let messageClass = isSender ? "sent" : "received";
-
-        let parsedMessage = message ? Chat.BasicEmojis.parseEmojis(message) : "";
+        let parsedMessage = message ? Group.BasicEmojis.parseEmojis(message) : "";
         let fileHtml = "";
 
         if (file && file.length > 0) {
@@ -352,18 +353,18 @@ var Group = {
 
             if (mimeType.startsWith("image")) {
                 fileHtml = `
-        <div class="mt-2">
-            <img src="data:${mimeType};base64,${file}" alt="Image" class="img-fluid" style="max-width: 200px; border-radius: 8px;">
-        </div>
-        `;
+                <div class="mt-2">
+                    <img src="data:${mimeType};base64,${file}" alt="Image" class="img-fluid" style="max-width: 200px; border-radius: 8px;">
+                </div>
+            `;
             } else {
                 fileHtml = `
-        <div class="mt-2">
-            <a href="data:${mimeType};base64,${file}" download="${FileName || 'file'}">
-                Скачать вложение (${FileName || "файл"})
-            </a>
-        </div>
-        `;
+                <div class="mt-2">
+                    <a href="data:${mimeType};base64,${file}" download="${FileName || 'file'}">
+                        Скачать вложение (${FileName || "файл"})
+                    </a>
+                </div>
+            `;
             }
         }
 
@@ -375,7 +376,7 @@ var Group = {
 <li class="${messageClass}">
     <div class="media p-2">
         <div class="profile-avatar mr-2">
-            <img class="avatar-img" src="${author.avatar}" alt="avatar">
+            <img class="avatar-img" src="${author.Avatar}" alt="avatar">
         </div>
         <div class="media-body overflow-hidden">
             <div class="d-flex mb-1">

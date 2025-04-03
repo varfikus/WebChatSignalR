@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using WebChatSignalR.Models;
+using WebChatSignalR.Services;
 
 namespace WebChatSignalR.Areas.Identity.Pages.Account.Manage
 {
@@ -18,12 +19,12 @@ namespace WebChatSignalR.Areas.Identity.Pages.Account.Manage
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
-        private readonly IEmailSender _emailSender;
+        private readonly Services.IEmailSender _emailSender;
 
         public EmailModel(
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
-            IEmailSender emailSender)
+            Services.IEmailSender emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;

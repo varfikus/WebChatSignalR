@@ -1,7 +1,21 @@
 ﻿@page
-@model ConfirmEmailModel
+@model WebChatSignalR.Areas.Identity.Pages.Account.ConfirmEmailModel
 @{
-    ViewData["Title"] = "Confirm email";
+    ViewData["Title"] = "Confirm Email";
 }
 
 <h1>@ViewData["Title"]</h1>
+
+@if (!string.IsNullOrEmpty(Model.StatusMessage))
+{
+    <div class="alert alert-info">@Model.StatusMessage</div>
+}
+
+@section Scripts {
+    <script>
+        @if (Model.StatusMessage.Contains("successfully"))
+        {
+            @:setTimeout(function () { window.location.href = '/'; }, 2000);
+        }
+    </script>
+}

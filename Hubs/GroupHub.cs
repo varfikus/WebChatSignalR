@@ -81,9 +81,9 @@ namespace WebChatSignalR.Hubs
             }
         }
 
-        public async Task SendVoiceMessage(string GroupId, string UserId, string FilePath)
+        public async Task SendGroupVoiceMessage(string GroupId, string UserId, string FilePath, string groupId)
         {
-            await Clients.Group(GroupId).SendAsync("ReceiveGroupVoiceMessage", UserId, FilePath, DateTime.UtcNow);
+            await Clients.Group(GroupId).SendAsync("ReceiveGroupVoiceMessage", UserId, FilePath, DateTime.UtcNow, groupId);
         }
 
         public override Task OnConnectedAsync()
@@ -107,13 +107,9 @@ namespace WebChatSignalR.Hubs
             await Groups.AddToGroupAsync(Context.ConnectionId, GroupId);
         }
 
-        public async Task LeaveRoom(string RoomId)
+        public async Task LeaveGroup(string groupId)
         {
-            if (string.IsNullOrEmpty(RoomId))
-                throw new ArgumentException("Invalid room ID");
-
-            await Groups.RemoveFromGroupAsync(
-                Context.ConnectionId, RoomId);
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupId);
         }
 
         private async Task SendNotification(string UserId, string RoomId, string message)

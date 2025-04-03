@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using WebChatSignalR.Models;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Text;
+using WebChatSignalR.Services;
 
 namespace WebChatSignalR.Areas.Identity.Pages.Account
 {
@@ -23,17 +24,17 @@ namespace WebChatSignalR.Areas.Identity.Pages.Account
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
-        //private readonly IEmailSender _emailSender;
+        private readonly Services.IEmailSender _emailSender;
 
         public LoginModel(SignInManager<AppUser> signInManager,
             ILogger<LoginModel> logger,
-            UserManager<AppUser> userManager
-            /*IEmailSender emailSender*/)
+            UserManager<AppUser> userManager,
+            Services.IEmailSender emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
-            //_emailSender = emailSender;
+            _emailSender = emailSender;
 
         }
 
@@ -90,7 +91,6 @@ namespace WebChatSignalR.Areas.Identity.Pages.Account
                     return Page();
                 }
 
-                // Check if email is confirmed
                 if (!await _userManager.IsEmailConfirmedAsync(user))
                 {
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -98,11 +98,15 @@ namespace WebChatSignalR.Areas.Identity.Pages.Account
                     var callbackUrl = Url.Page(
                         "/Account/ConfirmEmail",
                         pageHandler: null,
-                        values: new { area = "Identity", UserId = user.Id, code = code, returnUrl = returnUrl },
+                        values: new { area = "Identity", userId = user.Id, code = code, returnUrl = returnUrl },
                         protocol: Request.Scheme);
 
-                    // Instead of sending an email, redirect to the confirmation page
-                    return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl, confirmationUrl = callbackUrl });
+                    await _emailSender.SendEmailAsync(
+                        Input.Email,
+                        "Confirm your email",
+                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+                    return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
                 }
 
                 var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
@@ -127,9 +131,7 @@ namespace WebChatSignalR.Areas.Identity.Pages.Account
                 }
             }
 
-            // If we got this far, something failed, redisplay form
             return Page();
         }
-
     }
 }
