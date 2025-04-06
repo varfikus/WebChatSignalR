@@ -10,16 +10,16 @@
 
 <div class="row">
     <div class="col-md-6">
-        <p>Ваш аккаунт содержит персональные данные, переданные вами. Вы можете скачать или удалить эти данные.</p>
-        <p>
+        <p>Ваш аккаунт содержит персональные данные, переданные вами. Вы можете скачать@*  или удалить *@ эти данные.</p>
+        @* <p>
             <strong>Удаление этих данных приведет к удалению аккаунта, его нельзя будет восстановить.</strong>
-        </p>
+        </p> *@
         <form id="download-data" asp-page="DownloadPersonalData" method="post" class="form-group">
             <button class="btn btn-primary" type="submit">Скачать</button>
         </form>
-        <p>
+        @* <p>
             <a id="delete" asp-page="DeletePersonalData" class="btn btn-primary">Удалить</a>
-        </p>
+        </p> *@
     </div>
 </div>
 

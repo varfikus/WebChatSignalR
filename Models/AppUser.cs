@@ -9,6 +9,7 @@ public class AppUser : IdentityUser<int>
 {
     public string? Name { get; set; }
     public string? Avatar { get; set; }
+    public bool? IsOnline { get; set; }
     public ICollection<Room> CreatedRooms { get; set; } = new List<Room>(); 
     public ICollection<Room> Rooms { get; set; } = new List<Room>();
     public ICollection<Message> Messages { get; set; } = new List<Message>();

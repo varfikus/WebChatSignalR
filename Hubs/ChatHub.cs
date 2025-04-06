@@ -4,6 +4,7 @@ using System.IO;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using WebChatSignalR.Data;
@@ -14,10 +15,12 @@ namespace WebChatSignalR.Hubs
     public class ChatHub : Hub
     {
         private readonly ChatDbContext _db;
+        private readonly UserManager<AppUser> _userManager;
         private static readonly Dictionary<string, string> OnlineUser = new Dictionary<string, string>();
-        public ChatHub(ChatDbContext db)
+        public ChatHub(ChatDbContext db, UserManager<AppUser> userManager)
         {
             _db = db;
+            _userManager = userManager;
         }
 
         public async Task SendMessage(string conversationId, string UserId, string message, string base64File, string FileName)
@@ -99,20 +102,62 @@ namespace WebChatSignalR.Hubs
             await Clients.Group(RoomId).SendAsync("ReceiveVoiceMessage", UserId, FilePath, DateTime.UtcNow);
         }
 
-        public override Task OnConnectedAsync()
+        public override async Task OnConnectedAsync()
         {
             var loginUserId = GetLoginUser();
-            if (!OnlineUser.ContainsKey(loginUserId))
+            if (!string.IsNullOrEmpty(loginUserId))
             {
-                OnlineUser.Add(loginUserId,Context.ConnectionId);
+                OnlineUser[loginUserId] = Context.ConnectionId;
+
+                await UpdateUserOnlineStatus(loginUserId, true);
+                await Clients.All.SendAsync("UserOnline", loginUserId);
             }
-            return base.OnConnectedAsync();
+
+            await base.OnConnectedAsync();
         }
 
-        public override Task OnDisconnectedAsync(Exception exception)
+        public override async Task OnDisconnectedAsync(Exception exception)
         {
-            OnlineUser.Remove(GetLoginUser());
-            return base.OnDisconnectedAsync(exception);
+            var loginUserId = GetLoginUser();
+            if (!string.IsNullOrEmpty(loginUserId))
+            {
+                OnlineUser.Remove(loginUserId, out _);
+
+                await UpdateUserOnlineStatus(loginUserId, false);
+                await Clients.All.SendAsync("UserOffline", loginUserId);
+            }
+
+            await base.OnDisconnectedAsync(exception);
+        }
+
+        public async Task RegisterOnline(string userId)
+        {
+            if (!string.IsNullOrEmpty(userId))
+            {
+                OnlineUser[userId] = Context.ConnectionId;
+
+                if (Context.ConnectionId != null)
+                {
+                    await UpdateUserOnlineStatus(userId, true);
+                    await Clients.Caller.SendAsync("UserOnline", userId);
+                    await Clients.All.SendAsync("UserOnline", userId); 
+                }
+            }
+        }
+
+        public Task<bool> CheckUserStatus(string userId)
+        {
+            return Task.FromResult(OnlineUser.ContainsKey(userId));
+        }
+
+        private async Task UpdateUserOnlineStatus(string userId, bool isOnline)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user != null)
+            {
+                user.IsOnline = isOnline;
+                await _userManager.UpdateAsync(user);
+            }
         }
 
         public async Task JoinRoom(string RoomId)

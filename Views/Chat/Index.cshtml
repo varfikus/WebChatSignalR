@@ -64,7 +64,21 @@
                 <div class="profile-avatar mr-2">
                     <img class="avatar-img" src="/images/@Model.Conversation.Sender.Avatar" alt="">
                 </div>
-                        <h6 class="text-truncate mt-1 mr-auto">@Model.Conversation.Sender.Name</h6>
+                    <div class="mt-1 mr-auto">
+                        <input type="hidden" id="targetUserId" value="@Model.Conversation.Sender.Id"/>
+                        <h6 class="text-truncate mb-0">@Model.Conversation.Sender.Name</h6>
+                        @{
+                            var isOnline = Model.Conversation.Sender.IsOnline;
+                            var statusText = "Offline";
+                            var statusClass = "text-muted";
+                            if (isOnline == true)
+                            {
+                                statusText = "Online";
+                                statusClass = "text-success";
+                            }
+                        }
+                        <small id="user-status" class="@statusClass">@statusText</small>
+                    </div>
                         <div class="dropdown">
                             <a class="btn dropdown-toggle upright" id="chat-drop" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             </a>
@@ -268,3 +282,4 @@ else
 </div>
 <script src="~/lib/signalr/dist/browser/signalr.js"></script>
 <script src="~/js/chat.js"></script>
+<script src="~/js/online.js"></script>

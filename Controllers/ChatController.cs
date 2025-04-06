@@ -60,13 +60,15 @@ namespace WebChatSignalR.Controllers
                     {
                         Id = x.UserId != null && x.UserId != loginUserId ? x.UserId : x.CreatorId,
                         Name = x.UserId != null && x.UserId != loginUserId ? x.User.Name : x.Creator.Name,
-                        Avatar = x.UserId != null && x.UserId != loginUserId ? x.User.Avatar : x.Creator.Avatar
+                        Avatar = x.UserId != null && x.UserId != loginUserId ? x.User.Avatar : x.Creator.Avatar,
+                        IsOnline = x.UserId != null && x.UserId != loginUserId ? x.User.IsOnline : x.Creator.IsOnline
                     },
                     Recipient = new PersonViewModel
                     {
                         Id = x.UserId != null && x.UserId == loginUserId ? x.UserId : x.CreatorId,
                         Name = x.UserId != null && x.UserId == loginUserId ? x.User.Name : x.Creator.Name,
-                        Avatar = x.UserId != null && x.UserId == loginUserId ? x.User.Avatar : x.Creator.Avatar
+                        Avatar = x.UserId != null && x.UserId == loginUserId ? x.User.Avatar : x.Creator.Avatar,
+                        IsOnline = x.UserId != null && x.UserId == loginUserId ? x.User.IsOnline : x.Creator.IsOnline
                     },
                     UpdatedDate = x.UpdatedDate,
                     UpdateBy = x.UpdatedBy,
@@ -94,13 +96,15 @@ namespace WebChatSignalR.Controllers
                         {
                             Id = x.UserId != null && x.UserId != loginUserId ? x.UserId : x.CreatorId,
                             Name = x.UserId != null && x.UserId != loginUserId ? x.User.Name : x.Creator.Name,
-                            Avatar = x.UserId != null && x.UserId != loginUserId ? x.User.Avatar : x.Creator.Avatar
+                            Avatar = x.UserId != null && x.UserId != loginUserId ? x.User.Avatar : x.Creator.Avatar,
+                            IsOnline = x.UserId != null && x.UserId != loginUserId ? x.User.IsOnline : x.Creator.IsOnline
                         },
                         Recipient = new PersonViewModel
                         {
                             Id = x.UserId != null && x.UserId == loginUserId ? x.UserId : x.CreatorId,
                             Name = x.UserId != null && x.UserId == loginUserId ? x.User.Name : x.Creator.Name,
-                            Avatar = x.UserId != null && x.UserId == loginUserId ? x.User.Avatar : x.Creator.Avatar
+                            Avatar = x.UserId != null && x.UserId == loginUserId ? x.User.Avatar : x.Creator.Avatar,
+                            IsOnline = x.UserId != null && x.UserId == loginUserId ? x.User.IsOnline : x.Creator.IsOnline
                         },
                         UpdatedDate = x.UpdatedDate,
                         UpdateBy = x.UpdatedBy,
@@ -128,13 +132,15 @@ namespace WebChatSignalR.Controllers
                             {
                                 Id = x.UserId != null && x.UserId != loginUserId ? x.UserId : x.CreatorId,
                                 Name = x.UserId != null && x.UserId != loginUserId ? x.User.Name : x.Creator.Name,
-                                Avatar = x.UserId != null && x.UserId != loginUserId ? x.User.Avatar : x.Creator.Avatar
+                                Avatar = x.UserId != null && x.UserId != loginUserId ? x.User.Avatar : x.Creator.Avatar,
+                                IsOnline = x.UserId != null && x.UserId != loginUserId ? x.User.IsOnline : x.Creator.IsOnline
                             },
                             Recipient = new PersonViewModel
                             {
                                 Id = x.UserId != null && x.UserId == loginUserId ? x.UserId : x.CreatorId,
                                 Name = x.UserId != null && x.UserId == loginUserId ? x.User.Name : x.Creator.Name,
-                                Avatar = x.UserId != null && x.UserId == loginUserId ? x.User.Avatar : x.Creator.Avatar
+                                Avatar = x.UserId != null && x.UserId == loginUserId ? x.User.Avatar : x.Creator.Avatar,
+                                IsOnline = x.UserId != null && x.UserId == loginUserId ? x.User.IsOnline : x.Creator.IsOnline
                             },
                             UpdatedDate = x.UpdatedDate,
                             UpdateBy = x.UpdatedBy,
@@ -154,8 +160,6 @@ namespace WebChatSignalR.Controllers
                     conversation.BlockedBy = currentRoom.BlockedBy;
                     conversation.Recipient = currentRoom.Recipient;
                     conversation.Sender = currentRoom.Sender;
-                    //conversation.Sender = currentRoom.Sender ?? new PersonViewModel();
-                    //conversation.Recipient = currentRoom.Recipient ?? new PersonViewModel();
 
                     var textMessages = await _dbContext.Messages
                         .Where(x => x.RoomId == currentRoom.Id)
