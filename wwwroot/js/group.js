@@ -158,13 +158,13 @@ var Group = {
             return;
         }
         
-        let author = users.find(u => u.id == UserId) || { name: "Unknown User", avatar: "/images/default-avatar.png" };
+        let author = users.find(u => u.id == UserId) || { name: "Unknown User", avatar: "~/images/default-avatar.png" };
 
         let voiceMessageHtml = `
 <li>
     <div class="media p-2">
         <div class="profile-avatar mr-2">
-            <img class="avatar-img" src="${author.avatar}" alt="avatar">
+            <img class="avatar-img" src="/images/${author.avatar}" alt="avatar">
         </div>
         <div class="media-body overflow-hidden">
             <div class="d-flex mb-1">
@@ -331,7 +331,7 @@ var Group = {
             return;
         }
         
-        let author = users.find(u => u.id == UserId) || { Name: "Unknown User", Avatar: "/images/default-avatar.png" };
+        let author = users.find(u => u.id == UserId) || { Name: "Unknown User", Avatar: "~/images/default-avatar.png" };
 
         let messageClass = "received";
 
@@ -376,7 +376,7 @@ var Group = {
 <li class="${messageClass}">
     <div class="media p-2">
         <div class="profile-avatar mr-2">
-            <img class="avatar-img" src="${author.Avatar}" alt="avatar">
+            <img class="avatar-img" src="/images/${author.avatar}" alt="avatar">
         </div>
         <div class="media-body overflow-hidden">
             <div class="d-flex mb-1">
@@ -440,7 +440,7 @@ var Group = {
             return content
         },
         addImage: function (imageName) {
-            return `<img class="emoji" alt="emoji" src="/images/emojis/${imageName}">`
+            return `<img class="emoji" alt="emoji" src="~/images/emojis/${imageName}">`
         },
     },
     showNotification: function (RoomId, message) {
@@ -489,7 +489,7 @@ var Group = {
                                <a class="position-absolute inset-0 " href="/Chat/${id}"> </a>
                                <div class="media">
                                    <div class="profile-avatar mr-2">
-                                       <img class="avatar-img" src="/images/${avatar}" >
+                                       <img class="avatar-img" src="~/images/${avatar}" >
                                    </div>
                                    <div class="media-body overflow-hidden">
                                        <div class="d-flex mb-1">

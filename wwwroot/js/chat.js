@@ -382,7 +382,7 @@ var Chat = {
       return content
     },
     addImage: function (imageName) {
-      return `<img class="emoji" alt="emoji" src="/images/emojis/${imageName}">`
+      return `<img class="emoji" alt="emoji" src="~/images/emojis/${imageName}">`
     },
   },
   showNotification: function (RoomId, message) {
@@ -431,7 +431,7 @@ var Chat = {
                                <a class="position-absolute inset-0 " href="/Chat/${id}"> </a>
                                <div class="media">
                                    <div class="profile-avatar mr-2">
-                                       <img class="avatar-img" src="/images/${avatar}" >
+                                       <img class="avatar-img" src="~/images/${avatar}" >
                                    </div>
                                    <div class="media-body overflow-hidden">
                                        <div class="d-flex mb-1">
@@ -720,7 +720,7 @@ var Utils = {
 //                               <a class="position-absolute inset-0 " href="/Chat/${id}"> </a>
 //                               <div class="media">
 //                                   <div class="profile-avatar mr-2">
-//                                       <img class="avatar-img" src="/images/${avatar}" >
+//                                       <img class="avatar-img" src="~/images/${avatar}" >
 //                                   </div>
 //                                   <div class="media-body overflow-hidden">
 //                                       <div class="d-flex mb-1">
@@ -921,7 +921,7 @@ var Utils = {
 //  let encodedMsg = `<li>
 //                        <div class="media p-2">
 //                            <div class="profile-avatar mr-2">
-//                                <img class="avatar-img" src="/images/${avatar}" >
+//                                <img class="avatar-img" src="~/images/${avatar}" >
 //                            </div>
 //
 //                            <div class="media-body overflow-hidden">
@@ -978,7 +978,7 @@ var Utils = {
 //    return content
 //  },
 //  addImage: function (imageName) {
-//    return `<img class="emoji" alt="emoji" src="/images/emojis/${imageName}">`
+//    return `<img class="emoji" alt="emoji" src="~/images/emojis/${imageName}">`
 //  },
 //}
 //

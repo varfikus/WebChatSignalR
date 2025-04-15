@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using WebChatSignalR.Hubs;
 using WebChatSignalR.Models;
 using WebChatSignalR.Data;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using WebChatSignalR.Services;
 
@@ -30,6 +29,11 @@ builder.Services.AddIdentity<AppUser, IdentityRole<int>>(options =>
 })
 .AddEntityFrameworkStores<ChatDbContext>()
 .AddDefaultTokenProviders();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Identity/Account/Login";
+});
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();

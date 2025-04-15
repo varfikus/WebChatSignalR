@@ -8,12 +8,19 @@
         <div class="col-md-6">
             @if (Model.Any())
             {
-                <h1>List of User</h1>
+                <h1>Список пользователей</h1>
                 <div class="list-group">
                     @foreach (var user in Model)
                     {
                         <a asp-controller="Chat" asp-action="Index" asp-route-id="@user.Id" class="list-group-item list-group-item-action">@user.Name</a>
                     }
+                </div>
+            }
+            else if (!Model.Any())
+            {
+                <div class="m-auto d-flex flex-column align-items-center" style="width: 300px;">
+                    <a class="btn btn-lg btn-primary mb-3 w-100" asp-area="Identity" asp-page="/Account/Register">Регистрация</a>
+                    <a class="btn btn-lg btn-primary w-100" asp-area="Identity" asp-page="/Account/Login">Вход</a>
                 </div>
             }
         </div>

@@ -24,6 +24,7 @@ namespace WebChatSignalR.Areas.Identity.Pages.Account.Manage
         }
 
         public string Username { get; set; }
+        public string AvatarFileName { get; set; }
 
         [TempData]
         public string StatusMessage { get; set; }
@@ -35,10 +36,14 @@ namespace WebChatSignalR.Areas.Identity.Pages.Account.Manage
         {
             [Required]
             [MaxLength(100)]
-            public string Name { get; set; }
+            public string? Name { get; set; }
+
             [Phone]
             [Display(Name = "Phone number")]
-            public string PhoneNumber { get; set; }
+            public string? PhoneNumber { get; set; }
+
+            [Display(Name = "Avatar")]
+            public IFormFile? AvatarImage { get; set; }
         }
 
         private async Task LoadAsync(AppUser user)
@@ -47,6 +52,7 @@ namespace WebChatSignalR.Areas.Identity.Pages.Account.Manage
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
 
             Username = userName;
+            AvatarFileName = user.Avatar;
 
             Input = new InputModel
             {
@@ -80,9 +86,13 @@ namespace WebChatSignalR.Areas.Identity.Pages.Account.Manage
                 await LoadAsync(user);
                 return Page();
             }
+
+            bool hasChanges = false;
+
             if (Input.Name != user.Name)
             {
                 user.Name = Input.Name;
+                hasChanges = true;
             }
 
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
@@ -92,6 +102,46 @@ namespace WebChatSignalR.Areas.Identity.Pages.Account.Manage
                 if (!setPhoneResult.Succeeded)
                 {
                     StatusMessage = "Unexpected error when trying to set phone number.";
+                    return RedirectToPage();
+                }
+
+                hasChanges = true;
+            }
+
+            if (Input.AvatarImage != null && Input.AvatarImage.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images");
+                Directory.CreateDirectory(uploadsFolder);
+
+                var newFileExtension = Path.GetExtension(Input.AvatarImage.FileName);
+                var newFileName = $"{user.Id}{newFileExtension}";
+                var newFilePath = Path.Combine(uploadsFolder, newFileName);
+
+                if (!string.IsNullOrEmpty(user.Avatar))
+                {
+                    var existingFilePath = Path.Combine(uploadsFolder, user.Avatar);
+                    if (System.IO.File.Exists(existingFilePath))
+                    {
+                        System.IO.File.Delete(existingFilePath);
+                    }
+                }
+
+                using (var stream = new FileStream(newFilePath, FileMode.Create))
+                {
+                    await Input.AvatarImage.CopyToAsync(stream);
+                }
+
+                user.Avatar = newFileName;
+                hasChanges = true;
+            }
+
+
+            if (hasChanges)
+            {
+                var updateResult = await _userManager.UpdateAsync(user);
+                if (!updateResult.Succeeded)
+                {
+                    StatusMessage = "Unexpected error when trying to update your profile.";
                     return RedirectToPage();
                 }
             }

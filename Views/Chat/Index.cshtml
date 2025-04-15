@@ -31,7 +31,7 @@
                         <a asp-controller="Chat" asp-action="Index" asp-route-id="@room.Sender.Id" class="position-absolute inset-0 "> </a>
                         <div class="d-flex">
                             <div class="profile-avatar mr-2">
-                                <img class="avatar-img" src="/images/@room.Sender.Avatar" alt="">
+                                <img class="avatar-img" src="~/images/@room.Sender.Avatar" alt="">
                             </div>
                             <div class="overflow-hidden w-100">
                                 <div class="d-flex mb-1">
@@ -62,7 +62,7 @@
             <div class="d-flex">
             <a id="close-chat" href="#" class="h1 text-decoration-none d-sm-none">←</a>
                 <div class="profile-avatar mr-2">
-                    <img class="avatar-img" src="/images/@Model.Conversation.Sender.Avatar" alt="">
+                    <img class="avatar-img" src="~/images/@Model.Conversation.Sender.Avatar" alt="">
                 </div>
                     <div class="mt-1 mr-auto">
                         <input type="hidden" id="targetUserId" value="@Model.Conversation.Sender.Id"/>
@@ -128,7 +128,7 @@
         <li class="message-item @(isSender ? "sent" : "received")">
             <div class="media p-2">
                 <div class="profile-avatar mr-2">
-                    <img class="avatar-img" src="@avatar" alt="avatar">
+                    <img class="avatar-img" src="~/images/@avatar" alt="avatar">
                 </div>
                 <div class="media-body overflow-hidden">
                     <div class="d-flex mb-1">

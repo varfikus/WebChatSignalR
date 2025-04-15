@@ -199,6 +199,7 @@ namespace WebChatSignalR.Controllers
         }
 
         [HttpPut]
+        [Route("Chat/ReadMessage")]
         public async Task<bool> ReadMessage([FromBody] int conversationId)
         {
             var loginUserId = CurrentLoginUser();

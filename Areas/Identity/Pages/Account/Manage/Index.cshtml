@@ -10,26 +10,49 @@
 <partial name="_StatusMessage" model="Model.StatusMessage" />
 <div class="row">
     <div class="col-md-6">
-        <form id="profile-form" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <form id="profile-form" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly"></div>
+
             <div class="form-group">
                 <label asp-for="Input.Name">Имя</label>
                 <input asp-for="Input.Name" class="form-control" />
-                <span asp-validation-for="Input.Name" class="text-danger"></span>
+                <span asp-validation-for="Input.Name"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="Username">Email</label>
-                <input asp-for="Username" class="form-control" disabled />
+                <input asp-for="Username" class="form-control" disabled/>
             </div>
+
             <div class="form-group">
                 <label asp-for="Input.PhoneNumber">Номер телефона</label>
                 <input asp-for="Input.PhoneNumber" class="form-control" />
-                <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+                <span asp-validation-for="Input.PhoneNumber"></span>
             </div>
-            <button id="update-profile-button" type="submit" class="btn btn-primary">Save</button>
+
+            <div class="form-group">
+                <label>Текущий аватар:</label><br />
+                @if (!string.IsNullOrEmpty(Model.AvatarFileName))
+                {
+                    <img src="~/images/@Model.AvatarFileName" alt="Avatar" style="max-height: 150px;"/>
+                }
+                else
+                {
+                    <p>Нет аватара</p>
+                }
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Input.AvatarImage">Загрузить новый аватар</label>
+                <input asp-for="Input.AvatarImage" type="file" class="form-control" />
+                <span asp-validation-for="Input.AvatarImage" class="text-danger"></span>
+            </div>
+
+            <button id="update-profile-button" type="submit" class="btn btn-primary">Сохранить</button>
         </form>
     </div>
 </div>
+
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

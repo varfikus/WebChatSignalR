@@ -241,7 +241,7 @@ namespace WebChatSignalR.Controllers
                 {
                     Id = gm.User.Id,
                     Name = gm.User.Name,
-                    Avatar = gm.User.Avatar ?? "/images/default-avatar.png"
+                    Avatar = gm.User.Avatar
                 })
                 .ToListAsync();
 

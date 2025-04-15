@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using WebChatSignalR.Data;
 using WebChatSignalR.Models;
 
-[assembly: HostingStartup(typeof(WebChatSignalR.Areas.Identity.IdentityHostingStartup))]
 namespace WebChatSignalR.Areas.Identity
 {
     public class IdentityHostingStartup : IHostingStartup

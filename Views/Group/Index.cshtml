@@ -32,7 +32,7 @@
                         <a asp-controller="Group" asp-action="Index" asp-route-id="@group.Id" class="position-absolute inset-0"></a>
                         <div class="d-flex">
                             <div class="profile-avatar mr-2">
-                                <img class="avatar-img" src="/images/@group" alt="">
+                                <img class="avatar-img" src="~/images/@group" alt="">
                             </div>
                             <div class="overflow-hidden w-100">
                                 <div class="d-flex mb-1">
@@ -54,7 +54,7 @@
         <div class="border-bottom p-1">
             <div class="d-flex">
                 <div class="profile-avatar mr-2">
-                    <img class="avatar-img" src="/images/" alt="avatar">
+                    <img class="avatar-img" src="~/images/" alt="avatar">
                 </div>
                 <h6 class="text-truncate mt-1 mr-auto">@Model.GroupConversation.Name</h6>
             </div>
@@ -89,12 +89,12 @@
                     var sender = Model.GroupConversation.Members.FirstOrDefault(m => m.User != null && m.User.Id == senderId)?.User;
                     bool isSender = senderId == Model.CurrentUser.Id;
 
-                    var avatar = sender?.Avatar ?? "/images/default-avatar.png";
+                    var avatar = sender?.Avatar ?? "~/images/default-avatar.png";
                     var name = sender?.Name ?? "Unknown User";
                     <li class="message-item @(isSender ? "sent" : "received")">
                         <div class="media p-2">
                             <div class="profile-avatar mr-2">
-                                <img class="avatar-img" src="@avatar" alt="avatar">
+                                    <img class="avatar-img" src="~/images/@avatar" alt="avatar">
                             </div>
                             <div class="media-body overflow-hidden">
                                 <div class="d-flex mb-1">
