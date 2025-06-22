@@ -83,7 +83,6 @@
                             <a class="btn dropdown-toggle upright" id="chat-drop" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             </a>
                             <div id="chat-dropdown" class="dropdown-menu" aria-labelledby="chat-drop">
-                                @* <a class="dropdown-item" href="#">🗑️ Delete Chat</a> *@
                                 <a class="dropdown-item" href="#">@(Model.Conversation.IsBlocked && !Model.Conversation.IsReported && Model.Conversation.BlockedBy == Model.Conversation.Recipient.Id ? "🚫 Разблокировать" : "🚫 Заблокировать")</a>
                                 <a class="dropdown-item" href="#">@(Model.Conversation.IsBlocked && Model.Conversation.IsReported && Model.Conversation.BlockedBy == Model.Conversation.Recipient.Id ? "☣️ Убрать жалобу" : "☣️ Пожаловаться")</a>
                             </div>

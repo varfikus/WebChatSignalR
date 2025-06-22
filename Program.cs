@@ -5,6 +5,7 @@ using WebChatSignalR.Models;
 using WebChatSignalR.Data;
 using Microsoft.AspNetCore.Http.Features;
 using WebChatSignalR.Services;
+using System.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,6 +76,58 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var connectionString = services.GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection");
+
+    var npgsqlBuilder = new Npgsql.NpgsqlConnectionStringBuilder(connectionString);
+    var targetDatabase = npgsqlBuilder.Database;
+
+    npgsqlBuilder.Database = "postgres";
+    using var systemConnection = new Npgsql.NpgsqlConnection(npgsqlBuilder.ToString());
+    systemConnection.Open();
+
+    bool dbJustCreated = false;
+
+    using (var checkCmd = systemConnection.CreateCommand())
+    {
+        checkCmd.CommandText = $"SELECT 1 FROM pg_database WHERE datname = '{targetDatabase}'";
+        var exists = checkCmd.ExecuteScalar() != null;
+
+        if (!exists)
+        {
+            using var createDbCmd = systemConnection.CreateCommand();
+            createDbCmd.CommandText = $"CREATE DATABASE \"{targetDatabase}\"";
+            createDbCmd.ExecuteNonQuery();
+            dbJustCreated = true;
+        }
+    }
+
+    systemConnection.Close();
+
+    if (dbJustCreated)
+    {
+        var dbContext = services.GetRequiredService<ChatDbContext>();
+        var connection = dbContext.Database.GetDbConnection();
+        connection.Open();
+
+        var sqlFilePath = Path.Combine(app.Environment.ContentRootPath, "ChatDB.sql");
+        if (File.Exists(sqlFilePath))
+        {
+            var sql = File.ReadAllText(sqlFilePath);
+
+            using var command = connection.CreateCommand();
+            command.CommandText = sql;
+            command.CommandType = CommandType.Text;
+            command.ExecuteNonQuery();
+        }
+
+        connection.Close();
+    }
+}
 
 app.MapControllerRoute(
     name: "default",

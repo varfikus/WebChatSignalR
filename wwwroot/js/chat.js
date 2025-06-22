@@ -382,7 +382,7 @@ var Chat = {
       return content
     },
     addImage: function (imageName) {
-      return `<img class="emoji" alt="emoji" src="~/images/emojis/${imageName}">`
+      return `<img class="emoji" alt="emoji" src="/images/emojis/${imageName}">`
     },
   },
   showNotification: function (RoomId, message) {

@@ -17,7 +17,7 @@
 
         private static string Img(string imageName)
         {
-            return ("<img class=\"emoji\" src=\"~/images/emojis/" + imageName + "\">");
+            return ("<img class=\"emoji\" src=\"/images/emojis/" + imageName + "\">");
         }
     }
 }
